@@ -1,9 +1,12 @@
-from docopt import docopt
-import numpy as np
 import os
 from os import path
 import sys
 import math
+
+from docopt import docopt
+
+import numpy as np
+from numpy.random import shuffle
 
 from keras.preprocessing import text
 
@@ -39,6 +42,7 @@ def main():
 
     corr = args['--corr']
 
+    # Load data
     if DEBUG:
         print('Loading language 1 data...')
         x1_train, x1_test = read_corpus(corpus1_file, .1, 4000)
@@ -57,7 +61,9 @@ def main():
     vocab2_size = x2_train.shape[1]
 
     n_train = x1_train.shape[0]
+    n_test = x1_test.shape[0]
 
+    # Set hyperparameters
     encoding_dim = 40
     batch_size = 5
     num_epochs = 3
@@ -65,6 +71,7 @@ def main():
     momentum = 0.0
     corr_lambda = 0.085
 
+    # Train the model
     model = BilingualAutoencoder(vocab1_size, vocab2_size, encoding_dim)
     criterion = nn.BCELoss()
 
@@ -81,16 +88,10 @@ def main():
         # Forward pass
         out1, out2 = model(x1, x2)
         if corr:
-            loss1 = criterion(out1, x2)
-            loss2 = criterion(out2, x1)
-            corr_term = corr_lambda * stats.pearsonr(model.encoder1(x1), model.encoder2(x2))
-            loss = loss1 + loss2 - corr_term
+            loss = loss_corr(x1, x2, out1, out2,
+                                      criterion, model, corr_lambda)
         else:
-            loss1 = criterion(out1, x1)
-            loss2 = criterion(out2, x1)
-            loss3 = criterion(out1, x2)
-            loss4 = criterion(out2, x2)
-            loss = loss1 + loss2 + loss3 + loss4
+            loss = loss_combined(x1, x2, out1, out2, criterion)
 
         # Backward pass
         optimizer.zero_grad()
@@ -99,7 +100,23 @@ def main():
 
         # Logging
         if i % 500 == 0:
-            print_stat_perm(epoch, num_epochs, i, n_train, loss.data[0])
+            losses = []
+            x1_test_s, x2_test_s = shuffle_in_unison(x1_test, x2_test)
+            for j in range(min(n_test, 10)):
+                xt1 = Variable(torch.from_numpy(x1_test_s[j, :]))
+                xt2 = Variable(torch.from_numpy(x2_test_s[j, :]))
+                if corr:
+                    losses.append(loss_corr(x1, x2, out1, out2,
+                                            criterion, model,
+                                            corr_lambda).data[0])
+                else:
+                    losses.append(loss_combined(x1, x2,
+                                                out1, out2,
+                                                criterion).data[0])
+            dev_loss_avg = sum(losses) / float(len(losses))
+
+            print_stat_perm(epoch, num_epochs, i, n_train,
+                            loss.data[0], dev_loss_avg)
         elif i % 10 == 0:
             print_stat(epoch, num_epochs, i, n_train, loss.data[0])
 
@@ -116,14 +133,33 @@ def main():
     torch.save(model.state_dict(), path.join(out_dir, 'autoenc.pth'))
 
 
+def loss_combined(x1, x2, y1, y2, criterion):
+    loss1 = criterion(out1, x1)
+    loss2 = criterion(out2, x1)
+    loss3 = criterion(out1, x2)
+    loss4 = criterion(out2, x2)
+    return loss1 + loss2 + loss3 + loss4
+
+
+def loss_corr(x1, x2, y1, y2, criterion, model, corr_lambda):
+    loss1 = criterion(y1, x2)
+    loss2 = criterion(y2, x1)
+    corr_term = corr_lambda * stats.pearsonr(model.encoder1(x1),
+                                             model.encoder2(x2))
+    return loss1 + loss2 - corr_term
+
+
+
 def print_stat(epoch, num_epochs, i, n_train, loss, line_end='\r'):
     print('epoch [{}/{}], example [{}/{}], loss:{:.4f}'
-        .format(epoch + 1, num_epochs, i, n_train, loss), end=line_end)
+        .format(epoch + 1, num_epochs, i, n_train, loss),
+                end=line_end)
     sys.stdout.flush()
 
 
-def print_stat_perm(epoch, num_epochs, i, n_train, loss):
+def print_stat_perm(epoch, num_epochs, i, n_train, loss, devloss):
     print_stat(epoch, num_epochs, i, n_train, loss, line_end='\n')
+    print('dev_loss:{:.4f}'.format(devloss))
 
 
 def read_corpus(corpus_file, train_factor, num_words):
@@ -146,28 +182,19 @@ def read_corpus(corpus_file, train_factor, num_words):
     tokenizer.fit_on_texts(train_lines)
     x_train = tokenizer.texts_to_matrix(train_lines, mode='binary')
     x_test = tokenizer.texts_to_matrix(test_lines, mode='binary')
+
     return x_train, x_test
 
 
-def get_model_memory_usage(batch_size, model):
-    import numpy as np
-    from keras import backend as K
-
-    shapes_mem_count = 0
-    for l in model.layers:
-        single_layer_mem = 1
-        for s in l.output_shape:
-            if s is None:
-                continue
-            single_layer_mem *= s
-        shapes_mem_count += single_layer_mem
-
-    trainable_count = np.sum([K.count_params(p) for p in set(model.trainable_weights)])
-    non_trainable_count = np.sum([K.count_params(p) for p in set(model.non_trainable_weights)])
-
-    total_memory = 4.0*batch_size*(shapes_mem_count + trainable_count + non_trainable_count)
-    gbytes = np.round(total_memory / (1024.0 ** 3), 3)
-    return gbytes
+def shuffle_in_unison(a, b):
+    assert len(a) == len(b)
+    shuffled_a = np.empty(a.shape, dtype=a.dtype)
+    shuffled_b = np.empty(b.shape, dtype=b.dtype)
+    permutation = np.random.permutation(len(a))
+    for old_index, new_index in enumerate(permutation):
+        shuffled_a[new_index] = a[old_index]
+        shuffled_b[new_index] = b[old_index]
+    return shuffled_a, shuffled_b
 
 
 if __name__ == '__main__':
