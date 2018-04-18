@@ -14,23 +14,29 @@ from torch import optim
 from torch.nn import functional as F
 from torch.nn import Parameter
 
-from mirror_linear import MirrorLinear
-
 
 class Autoencoder(nn.Module):
-    def __init__(self, n_input, n_hidden, n_output):
+    def __init__(self, n_vocab1, n_vocab2, n_hidden):
         super(Autoencoder, self).__init__()
-        self.encoder = nn.Sequential(
-            nn.Linear(n_input, n_hidden).double(),
+        self.encoder1 = nn.Sequential(
+            nn.Linear(n_vocab1, n_hidden).double(),
             nn.Sigmoid())
-        self.decoder = nn.Sequential(
-            nn.Linear(n_hidden, n_output).double(),
+        self.encoder2 = nn.Sequential(
+            nn.Linear(n_vocab2, n_hidden).double(),
+            nn.Sigmoid())
+        self.decoder1 = nn.Sequential(
+            nn.Linear(n_hidden, n_vocab1).double(),
+            nn.Sigmoid())
+        self.decoder2 = nn.Sequential(
+            nn.Linear(n_hidden, n_vocab2).double(),
             nn.Sigmoid())
 
-    def forward(self, x):
-        x = self.encoder(x)
-        x = self.decoder(x)
-        return x
+    def forward(self, x1, x2):
+        x1 = self.encoder1(x1)
+        x1 = self.decoder1(x1)
+        x2 = self.encoder2(x2)
+        x2 = self.decoder2(x2)
+        return x1, x2
 
 
 def main():
@@ -65,7 +71,7 @@ def main():
     num_epochs = 20
     learning_rate = 0.0003
 
-    model = Autoencoder(vocab1_size, encoding_dim, vocab1_size)
+    model = Autoencoder(vocab1_size, vocab2_size, encoding_dim)
     criterion = nn.BCELoss()
 
     optimizer = optim.RMSprop(model.parameters(),
@@ -76,10 +82,15 @@ def main():
         x1 = np.any(x1_train[begin:end, :], axis=0).astype(float)
         x2 = np.any(x2_train[begin:end, :], axis=0).astype(float)
         x1 = Variable(torch.from_numpy(x1))
+        x2 = Variable(torch.from_numpy(x2))
 
         # Forward pass
-        output = model(x1)
-        loss = criterion(output, x1)
+        out1, out2 = model(x1, x2)
+        loss1 = criterion(out1, x1)
+        loss2 = criterion(out2, x1)
+        loss3 = criterion(out1, x2)
+        loss4 = criterion(out2, x2)
+        loss = loss1 + loss2 + loss3 + loss4
 
         # Backward pass
         optimizer.zero_grad()
