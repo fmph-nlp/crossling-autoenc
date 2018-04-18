@@ -15,30 +15,10 @@ from torch.nn import functional as F
 from torch.nn import Parameter
 
 import statistics as stats
+from autoencoder import BilingualAutoencoder
 
 
-class Autoencoder(nn.Module):
-    def __init__(self, n_vocab1, n_vocab2, n_hidden):
-        super(Autoencoder, self).__init__()
-        self.encoder1 = nn.Sequential(
-            nn.Linear(n_vocab1, n_hidden).double(),
-            nn.Sigmoid())
-        self.encoder2 = nn.Sequential(
-            nn.Linear(n_vocab2, n_hidden).double(),
-            nn.Sigmoid())
-        self.decoder1 = nn.Sequential(
-            nn.Linear(n_hidden, n_vocab1).double(),
-            nn.Sigmoid())
-        self.decoder2 = nn.Sequential(
-            nn.Linear(n_hidden, n_vocab2).double(),
-            nn.Sigmoid())
-
-    def forward(self, x1, x2):
-        x1 = self.encoder1(x1)
-        x1 = self.decoder1(x1)
-        x2 = self.encoder2(x2)
-        x2 = self.decoder2(x2)
-        return x1, x2
+DEBUG = True
 
 
 def main():
@@ -59,10 +39,16 @@ def main():
 
     corr = args['--corr']
 
-    print('Loading language 1 data...')
-    x1_train, x1_test = read_corpus(corpus1_file, .1, 4000)
-    print('Loading language 2 data...')
-    x2_train, x2_test = read_corpus(corpus2_file, .1, 4000)
+    if DEBUG:
+        print('Loading language 1 data...')
+        x1_train, x1_test = read_corpus(corpus1_file, .1, 4000)
+        print('Loading language 2 data...')
+        x2_train, x2_test = read_corpus(corpus2_file, .1, 4000)
+    else:
+        print('Loading language 1 data...')
+        x1_train, x1_test = read_corpus(corpus1_file, .8, 12000)
+        print('Loading language 2 data...')
+        x2_train, x2_test = read_corpus(corpus2_file, .8, 12000)
 
     print(x1_train.shape)
     print(x1_test.shape)
@@ -79,7 +65,7 @@ def main():
     momentum = 0.0
     corr_lambda = 0.085
 
-    model = Autoencoder(vocab1_size, vocab2_size, encoding_dim)
+    model = BilingualAutoencoder(vocab1_size, vocab2_size, encoding_dim)
     criterion = nn.BCELoss()
 
     optimizer = optim.RMSprop(model.parameters(),
@@ -99,9 +85,6 @@ def main():
             loss2 = criterion(out2, x1)
             corr_term = corr_lambda * stats.pearsonr(model.encoder1(x1), model.encoder2(x2))
             loss = loss1 + loss2 - corr_term
-            #print('loss1: ', loss1)
-            #print('loss2: ', loss2)
-            #print('corr: ', corr_term)
         else:
             loss1 = criterion(out1, x1)
             loss2 = criterion(out2, x1)
@@ -151,7 +134,10 @@ def read_corpus(corpus_file, train_factor, num_words):
 
     train_size = int(len(lines) * train_factor)
     train_lines = lines[:train_size]
-    test_lines = lines[train_size:int(train_size * 1.2)]
+    if DEBUG:
+        test_lines = lines[train_size:int(train_size * 1.2)]
+    else:
+        test_lines = lines[train_size:]
 
     tokenizer = text.Tokenizer(num_words=num_words,
                               lower=False,
