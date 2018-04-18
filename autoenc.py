@@ -14,6 +14,8 @@ from torch import optim
 from torch.nn import functional as F
 from torch.nn import Parameter
 
+import statistics as stats
+
 
 class Autoencoder(nn.Module):
     def __init__(self, n_vocab1, n_vocab2, n_hidden):
@@ -46,11 +48,16 @@ def main():
 
     Example:
         autoenc.py eubookshop.tsv my_model
+
+    Options:
+        --corr       Whether to use the correlation term.
     """)
 
     corpus1_file = args['<corpus1>']
     corpus2_file = args['<corpus2>']
     out_dir = args['<outdir>']
+
+    corr = args['--corr']
 
     print('Loading language 1 data...')
     x1_train, x1_test = read_corpus(corpus1_file, .1, 4000)
@@ -65,18 +72,19 @@ def main():
 
     n_train = x1_train.shape[0]
 
-    # this is the size of our encoded representations
     encoding_dim = 40
     batch_size = 5
-    num_epochs = 20
-    learning_rate = 0.0003
+    num_epochs = 3
+    learning_rate = 0.00001
+    momentum = 0.0
+    corr_lambda = 0.085
 
     model = Autoencoder(vocab1_size, vocab2_size, encoding_dim)
     criterion = nn.BCELoss()
 
     optimizer = optim.RMSprop(model.parameters(),
                               lr=learning_rate,
-                              momentum=0.3)
+                              momentum=momentum)
 
     def train_step(begin, end):
         x1 = np.any(x1_train[begin:end, :], axis=0).astype(float)
@@ -86,11 +94,20 @@ def main():
 
         # Forward pass
         out1, out2 = model(x1, x2)
-        loss1 = criterion(out1, x1)
-        loss2 = criterion(out2, x1)
-        loss3 = criterion(out1, x2)
-        loss4 = criterion(out2, x2)
-        loss = loss1 + loss2 + loss3 + loss4
+        if corr:
+            loss1 = criterion(out1, x2)
+            loss2 = criterion(out2, x1)
+            corr_term = corr_lambda * stats.pearsonr(model.encoder1(x1), model.encoder2(x2))
+            loss = loss1 + loss2 - corr_term
+            #print('loss1: ', loss1)
+            #print('loss2: ', loss2)
+            #print('corr: ', corr_term)
+        else:
+            loss1 = criterion(out1, x1)
+            loss2 = criterion(out2, x1)
+            loss3 = criterion(out1, x2)
+            loss4 = criterion(out2, x2)
+            loss = loss1 + loss2 + loss3 + loss4
 
         # Backward pass
         optimizer.zero_grad()
