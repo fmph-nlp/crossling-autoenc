@@ -134,10 +134,10 @@ def main():
 
 
 def loss_combined(x1, x2, y1, y2, criterion):
-    loss1 = criterion(out1, x1)
-    loss2 = criterion(out2, x1)
-    loss3 = criterion(out1, x2)
-    loss4 = criterion(out2, x2)
+    loss1 = criterion(y1, x1)
+    loss2 = criterion(y2, x1)
+    loss3 = criterion(y1, x2)
+    loss4 = criterion(y2, x2)
     return loss1 + loss2 + loss3 + loss4
 
 
