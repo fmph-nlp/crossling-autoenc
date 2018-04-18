@@ -105,13 +105,14 @@ def main():
             for j in np.random.choice(n_test, 10):
                 xt1 = Variable(torch.from_numpy(x1_test[j, :]))
                 xt2 = Variable(torch.from_numpy(x2_test[j, :]))
+                outt1, outt2 = model(xt1, xt2)
                 if corr:
-                    losses.append(loss_corr(x1, x2, out1, out2,
+                    losses.append(loss_corr(x1, x2, outt1, outt2,
                                             criterion, model,
                                             corr_lambda).data[0])
                 else:
-                    losses.append(loss_combined(x1, x2,
-                                                out1, out2,
+                    losses.append(loss_combined(xt1, xt2,
+                                                outt1, outt2,
                                                 criterion).data[0])
             dev_loss_avg = sum(losses) / float(len(losses))
 
