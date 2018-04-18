@@ -101,10 +101,10 @@ def main():
         # Logging
         if i % 500 == 0:
             losses = []
-            x1_test_s, x2_test_s = shuffle_in_unison(x1_test, x2_test)
-            for j in range(min(n_test, 10)):
-                xt1 = Variable(torch.from_numpy(x1_test_s[j, :]))
-                xt2 = Variable(torch.from_numpy(x2_test_s[j, :]))
+            # Pick 10 test samples for dev loss
+            for j in np.random.choice(n_test, 10):
+                xt1 = Variable(torch.from_numpy(x1_test[j, :]))
+                xt2 = Variable(torch.from_numpy(x2_test[j, :]))
                 if corr:
                     losses.append(loss_corr(x1, x2, out1, out2,
                                             criterion, model,
