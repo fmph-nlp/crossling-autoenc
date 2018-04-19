@@ -1,0 +1,132 @@
+Computing similarities [1]...
+word  1 with similarity 1.0000: výsledok
+word  2 with similarity 0.8227: stránka
+word  3 with similarity 0.8208: prípad
+word  4 with similarity 0.8183: politika
+word  5 with similarity 0.8182: to
+word  6 with similarity 0.8099: prístup
+word  7 with similarity 0.8070: rozhodnutie
+word  8 with similarity 0.8062: podpora
+word  9 with similarity 0.8057: –
+word 10 with similarity 0.8053: životný
+word 11 with similarity 0.8050: rovnaký
+word 12 with similarity 0.8040: môcť
+word 13 with similarity 0.8036: sa
+word 14 with similarity 0.8033: uvedený
+word 15 with similarity 0.8032: inštitúcia
+word 16 with similarity 0.8025: súdny
+word 17 with similarity 0.7998: zmluva
+word 18 with similarity 0.7990: členský
+word 19 with similarity 0.7978: národný
+word 20 with similarity 0.7977: na
+word 21 with similarity 0.7972: ako
+word 22 with similarity 0.7961: krajina
+word 23 with similarity 0.7958: 1
+word 24 with similarity 0.7950: nový
+word 25 with similarity 0.7949: s
+word 26 with similarity 0.7923: do
+word 27 with similarity 0.7921: 4
+word 28 with similarity 0.7916: rozhodnúť
+word 29 with similarity 0.7914: pre
+word 30 with similarity 0.7913: vec
+Computing similarities [2]...
+word  1 with similarity 0.8211: članica
+word  2 with similarity 0.8125: drug
+word  3 with similarity 0.8114: ne
+word  4 with similarity 0.8096: zaradi
+word  5 with similarity 0.8083: na
+word  6 with similarity 0.8081: 17
+word  7 with similarity 0.8078: 4
+word  8 with similarity 0.8075: za
+word  9 with similarity 0.8060: c
+word 10 with similarity 0.8050: družba
+word 11 with similarity 0.8049: glede
+word 12 with similarity 0.8037: e
+word 13 with similarity 0.8033: ali
+word 14 with similarity 0.8018: se
+word 15 with similarity 0.8007: iz
+word 16 with similarity 0.7993: skupnost
+word 17 with similarity 0.7987: država
+word 18 with similarity 0.7975: •
+word 19 with similarity 0.7969: –
+word 20 with similarity 0.7966: z
+word 21 with similarity 0.7955: javen
+word 22 with similarity 0.7949: on
+word 23 with similarity 0.7946: dan
+word 24 with similarity 0.7944: ta
+word 25 with similarity 0.7937: tudi
+word 26 with similarity 0.7931: po
+word 27 with similarity 0.7926: “
+word 28 with similarity 0.7925: o
+word 29 with similarity 0.7922: leto
+word 30 with similarity 0.7917: in
+
+
+(env) ifrag@ifrag-think ~/projects/crossling/autoenc :( $ python closest.py ../res/eubookshop/sk.lemmas ../res/eubookshop/sl.lemmas 03-4kw_lr41_mom00_3ep_rms_corr0085/autoenc.pth članica sl 30
+Using TensorFlow backend.
+Loading language 1 data...
+Loading language 2 data...
+Model loaded
+Computing similarities [1]...
+word  1 with similarity 0.9826: táto
+word  2 with similarity 0.9817: –
+word  3 with similarity 0.9811: komisia
+word  4 with similarity 0.9810: sa
+word  5 with similarity 0.9808: na
+word  6 with similarity 0.9801: byť
+word  7 with similarity 0.9797: pre
+word  8 with similarity 0.9792: ktorý
+word  9 with similarity 0.9785: s
+word 10 with similarity 0.9779: rada
+word 11 with similarity 0.9778: „
+word 12 with similarity 0.9775: to
+word 13 with similarity 0.9774: v
+word 14 with similarity 0.9767: mať
+word 15 with similarity 0.9754: a
+word 16 with similarity 0.9754: členský
+word 17 with similarity 0.9751: všetok
+word 18 with similarity 0.9751: môcť
+word 19 with similarity 0.9745: z
+word 20 with similarity 0.9739: európsky
+word 21 with similarity 0.9730: politika
+word 22 with similarity 0.9726: by
+word 23 with similarity 0.9725: za
+word 24 with similarity 0.9725: —
+word 25 with similarity 0.9709: že
+word 26 with similarity 0.9699: tento
+word 27 with similarity 0.9698: rok
+word 28 with similarity 0.9689: uvedený
+word 29 with similarity 0.9679: ako
+word 30 with similarity 0.9677: do
+Computing similarities [2]...
+word  1 with similarity 1.0000: članica
+word  2 with similarity 0.9846: po
+word  3 with similarity 0.9834: se
+word  4 with similarity 0.9831: za
+word  5 with similarity 0.9831: ta
+word  6 with similarity 0.9813: na
+word  7 with similarity 0.9809: ne
+word  8 with similarity 0.9783: in
+word  9 with similarity 0.9782: leto
+word 10 with similarity 0.9777: z
+word 11 with similarity 0.9773: drug
+word 12 with similarity 0.9771: iz
+word 13 with similarity 0.9766: država
+word 14 with similarity 0.9765: biti
+word 15 with similarity 0.9764: evropski
+word 16 with similarity 0.9761: kateri
+word 17 with similarity 0.9754: –
+word 18 with similarity 0.9750: v
+word 19 with similarity 0.9744: ki
+word 20 with similarity 0.9738: on
+word 21 with similarity 0.9738: �
+word 22 with similarity 0.9737: ali
+word 23 with similarity 0.9733: tako
+word 24 with similarity 0.9726: eu
+word 25 with similarity 0.9706: “
+word 26 with similarity 0.9704: pri
+word 27 with similarity 0.9684: sodelovanje
+word 28 with similarity 0.9678: kot
+word 29 with similarity 0.9675: unija
+word 30 with similarity 0.9671: o
+
