@@ -30,7 +30,7 @@ def main():
         autoenc.py [options] <corpus1> <corpus2> <outdir>
 
     Example:
-        autoenc.py eubookshop.tsv my_model
+        autoenc.py sk.lemmas sl.lemmas my_saved_model
 
     Options:
         --corr       Whether to use the correlation term.
